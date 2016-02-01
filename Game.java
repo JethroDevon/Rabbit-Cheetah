@@ -45,8 +45,10 @@ public class Game extends Canvas implements Runnable{
 	//this stores a typed keycode, it is returned with get typed, default is zero
 	private int typed = 0;
 
-	//static global Player object initialised in constructor
-	public Player p1;
+	//cheetah rabbit and grid objects declared here
+	public Rabbit rabbit;
+	public Cheetah cheetah;
+	public Grid grid;
 
 	//constructor for game class
 	public Game( int _W, int _H){
@@ -63,10 +65,13 @@ public class Game extends Canvas implements Runnable{
 
 		try{
 
-			p1 = new Player();
+			grid = new Grid();
+			rabbit = new Rabbit();
+			cheetah = new Cheetah();
+
 		}catch(Exception e){
 
-			System.out.println("Player failed to initialise");
+			System.out.println(" Sprite objects failed to initialise.");
 		}
 	}
 
@@ -100,23 +105,17 @@ public class Game extends Canvas implements Runnable{
         	//////////////////////////////////////////////////////////////////////////
 
 
-        	//background
+        	//temp background
 	 		graphics.setColor(Color.white);
         	graphics.fillRect( 0, 0, WIDTH, HEIGHT);
 
-        	
-        	if(getDirection() == "LEFT" ||getDirection() == "RIGHT" || getDirection() == "UP" || getDirection() == "DOWN"){
-
-        		p1.continue_activateState(getDirection());
-        		       		
-        	}
-
-        	p1.moveSprite();
-        	graphics.drawImage( p1.nextFrame(), p1.getPosX(), p1.getPosY(), null);
+        	graphics.drawImage( rabbit.nextFrame(), rabbit.getPosX(), rabbit.getPosY(), rabbit.getWidth(), rabbit.getHeight(),  null);
+        	graphics.drawImage( cheetah.nextFrame(), cheetah.getPosX(), cheetah.getPosY(), cheetah.getWidth(), cheetah.getHeight(), null);
       	 		
+        	cheetah.moveSprite();
+        	rabbit.moveSprite();
 
-
-	 		////////////////---------------------> end of drawring space <-----------------------------\\\\\\\\\\\\\\\\\
+	 		////////////////---------------------> end of drawring and updates <-----------------------------\\\\\\\\\\\\\\\\\
 
 
 	 		//clears graphics object once has been drawn to buffer to save memory leak
