@@ -20,9 +20,6 @@ import java.awt.event.KeyListener;
 	The Class also accomodates mouse and keyboard input with innerclasses and functions
 	that return the last key pressed or being held down
 
-	I found this tutorial useful http://content.gpwiki.org/index.php/Java:Tutorials:Double_Buffering
-	and http://www.java-forums.org/new-java/51185-copied-code-tutorial-bufferstrategy.html
-	and this idiot https://www.youtube.com/watch?v=dwu4DAoac-I
 
 */
 
@@ -65,9 +62,14 @@ public class Game extends Canvas implements Runnable{
 
 		try{
 
+			//initialises the objects
 			grid = new Grid();
 			rabbit = new Rabbit();
 			cheetah = new Cheetah();
+
+			//adding a little patch of sand to the grad array that contains the background
+			grid.addSandPatch( 4, 4);
+
 
 		}catch(Exception e){
 
@@ -108,6 +110,14 @@ public class Game extends Canvas implements Runnable{
         	//temp background
 	 		graphics.setColor(Color.white);
         	graphics.fillRect( 0, 0, WIDTH, HEIGHT);
+
+        	grid.drawGrid( graphics);
+        	//grid.drawNames( graphics);
+        	//grid.drawTorp( graphics);
+        	//grid.drawNumbers( graphics);
+        	grid.drawCheetahMD( graphics);
+        	//grid.drawConnections( graphics);
+        	grid.setCheetahMD( cheetah);
 
         	graphics.drawImage( rabbit.nextFrame(), rabbit.getPosX(), rabbit.getPosY(), rabbit.getWidth(), rabbit.getHeight(),  null);
         	graphics.drawImage( cheetah.nextFrame(), cheetah.getPosX(), cheetah.getPosY(), cheetah.getWidth(), cheetah.getHeight(), null);
@@ -293,3 +303,10 @@ public class Game extends Canvas implements Runnable{
 		}
 	}
 }
+
+/*
+
+	I found this tutorial useful http://content.gpwiki.org/index.php/Java:Tutorials:Double_Buffering
+	and http://www.java-forums.org/new-java/51185-copied-code-tutorial-bufferstrategy.html
+	and this idiot https://www.youtube.com/watch?v=dwu4DAoac-I
+*/

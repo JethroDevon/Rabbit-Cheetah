@@ -71,16 +71,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 import java.awt.Font;
 import java.lang.Math;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Transparency;
+import java.awt.*;
 import java.io.*;
 import javax.imageio.*;
 import java.awt.image.BufferedImage;
@@ -220,13 +211,13 @@ public class Sprite{
 			name = _name;
 
 			//temporary load image function
-			contactSheet = = ImageIO.read(new File(_path));
+			contactSheet = ImageIO.read(new File(_path));
 
 			//set default state of sprite
 			addState( "default", 0, 0, height, width, 0, 0, 0, 0);
 
 			//init frames array
-			initFrames( 1, 1);
+			initFrames( 0, 0);
 
 		}catch(Exception e){
 
@@ -381,6 +372,18 @@ public class Sprite{
 		return frames.get(frameNum);
 	}
 
+	//overloaded gets frame in args
+	public BufferedImage getFrame(int _frame){
+
+		if(_frame < frames.size()){
+
+			return frames.get(_frame);
+		}
+
+		System.out.println("Frame not found");
+		return frames.get(0);
+	}
+
 	//iterates next frame in loop but does not return it
 	public void nextFrame_noReturn(){
 
@@ -413,18 +416,32 @@ public class Sprite{
     	}
 	}
 
+	//adds a new frame
+	public void addFrame(BufferedImage _img){
+
+		frames.add(_img);
+	}
+
+	//replaces a frame, first arg is frame second arg is position in array if frame to replace
+	public void replaceFrame(BufferedImage _img, int _index){
+
+		frames.set(_index, _img);
+	}
+
 	//this function detects a collision with the sprite that is passed in args, if there is a collision 
 	//colliding is set to true else false
-	private void checkCollision(Sprite _spr){
+	boolean checkCollision(Sprite _spr){
 
 		//this is a standard collision detetion algorithm using the sprites dimensions
 		if(getPosX() + getWidth() > _spr.getPosX() && getPosX() < _spr.getPosX() + _spr.getWidth() &&
        getPosY() + getHeight() > _spr.getPosY() && getPosY() <  _spr.getPosY() + _spr.getHeight()){
 
 			colliding = false;
+			return true;
 		}else{
 
 			colliding = true;
+			return false;
 		}
 	}
 
@@ -450,6 +467,14 @@ public class Sprite{
 
 			velocity -= acceleration;
 		}
+	}
+
+	//will display text at an x and y distance from the top left corner from the sprite
+	//function takes a graphics object to draw to, the text to display and the the x and y
+	//offsets, remember to call after the sprite has been drawn to not draw the sprite over the text
+	public void drawString(Graphics g2, String _text, int _x, int _y){
+
+		g2.drawString( _text, getPosX() + _x, getPosY() + _y);
 	}
 
 	//////////////////////////////
@@ -516,6 +541,18 @@ public class Sprite{
 		return acceleration;
 	}
 
+	//returns name
+	public String getName(){
+
+		return name;
+	}
+
+	//sets name 
+	public void setName(String _name){
+
+		name = _name;
+	}
+
 	//sets angle 
 	public void setAngle(float _angle){
 
@@ -532,6 +569,13 @@ public class Sprite{
 	public void setHeight(int _height){
 
 		height = _height;
+	}
+
+	//this re-sets the X and y positions
+	public void setWH( int _w, int _h ){
+
+		width = _w;
+		height = _h;
 	}
 
 	//sets the present speed for the sprite

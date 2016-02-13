@@ -20,13 +20,11 @@ class Cheetah extends Sprite{
 		addState("UP-LEFT", 24, 31, getHeight(), getWidth(), 10, 0, 2, 225);
 		addState("LEFT", 56, 63, getHeight(), getWidth(), 10, 0, 2, 180);
 		addState("DOWN", 32, 39, getHeight(), getWidth(), 10, 0, 2, 90);
-		addState("DOWN-RIGHT", 40, 47, getHeight(), getWidth(), 10, 0, 2, 45);
+		addState("DOWN-RIGHT", 40, 47, getHeight(), getWidth(), 2, 0, 2, 45);
 		addState("DOWN-LEFT", 48, 55, getHeight(), getWidth(), 10, 0, 2, 135);
 
 		//set the default state to start
-		activateState("DOWN-LEFT");
-
-
-
+		activateState("DOWN-RIGHT");
 	}
+
 }
