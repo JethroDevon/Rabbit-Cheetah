@@ -99,7 +99,10 @@ public class Sprite{
 
 	//maxVelocity, velocity, angle and acceleration are for smooth movement functions of the sprite, acceleration is to add a spot of easing to the movement functions
 	//to create a natural movement maxVelocity is the set speed velocity will build up or down to based on acceleration 
-	private float maxVelocity, velocity, angle, acceleration;  
+	private float maxVelocity, velocity, acceleration;  
+
+	//angle variable, must be a double for easy conversion to degrees
+	private double angle;
 
 	//these are to check if the sprite is colliding with another sprite/colliding has been set to true, if the mouse is over the spite and if the sprite
 	//has been selected (mouse over sprite and a mouse click has been detected selected is toggled to true and false)
@@ -249,7 +252,7 @@ public class Sprite{
 	//this function adds a state to the sprite, the first state is always the default state, other states are added by the user, if you want 
 	//a value to stay the same when you add it use the state in args for example in height use sprite.getHeight() in your code.
 	//this will also overwrite a state with the same name
-	public void addState( String _stateName, int _fStart, int _fEnd, int _height, int _width, float _mvel, float _vel, float _acc, float _ang){
+	public void addState( String _stateName, int _fStart, int _fEnd, int _height, int _width, float _mvel, float _vel, float _acc, double _ang){
 	
 
 		//loops through states search for statename allready
@@ -337,7 +340,7 @@ public class Sprite{
 		float _maxVelocity = getmaxVelocity();
 		float _velocity = getVelocity();
 		float _acceleration = getAcceleration();
-		float _angle = getAngle();
+		double _angle = getAngle();
 
 		//call activate state as normal
 		activateState(_setStateTo);
@@ -518,7 +521,7 @@ public class Sprite{
 	}
 
 	//returns angle
-	public float getAngle(){
+	public double getAngle(){
 
 		return angle;
 	}
@@ -554,7 +557,7 @@ public class Sprite{
 	}
 
 	//sets angle 
-	public void setAngle(float _angle){
+	public void setAngle(double _angle){
 
 		angle = _angle;
 	}
@@ -626,10 +629,11 @@ public class Sprite{
 		//variables to store state data 
 		String dName;
 		int dStart, dEnd, dHeight, dWidth;
-		float dmaxVelocity, dvelocity, dacceleration, dangle;
+		float dmaxVelocity, dvelocity, dacceleration;
+		double dangle;
 
 		//initialise variables in constructor
-		public stateData(String _dname, int _dstart, int _dend, int _dheight, int _dwidth, float _dmvel, float _dvel, float _dacc, float _dangle){
+		public stateData(String _dname, int _dstart, int _dend, int _dheight, int _dwidth, float _dmvel, float _dvel, float _dacc, double _dangle){
 
 			dName = _dname;
 			dStart = _dstart;

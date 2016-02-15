@@ -6,6 +6,10 @@ class Grid extends Sprite{
 	//such as returning shortest path walks between two points 
 	Tile[][] grid;
 
+	//cheetah and rabbit tile are the tiles that are presently colliding with either the cheetah or rabbit, they are initialised with
+	//getAnimalLocation() function
+	Tile cheetahTile, rabbitTile;
+
 	//kernel allows me to ckeck surrounding elements in a two dimensional array by adding plus or minus values
 	//to a central tile value, used in a loop each surrounding tile will be returned, this data will be used for
 	//several operations including initialising each tiles surrounding tile array.
@@ -58,18 +62,9 @@ class Grid extends Sprite{
 		}
 	}
 
-	//set cheetah manhattan distance value, when this is called the tiles nearest to the cheetah have a lower value
-	//and the tiles further away have a higher value
-	public void setCheetahMD( Cheetah _che){
-
-		Tile temp;
-
-		//all sprite objects must be created in try catch blocks
-		try{
-
-			//temp tile for storing tile colliding with cheetah, initalised because it has to be
-			//but if named error can be used for debugging
-			temp = new Tile("error", getFrame(5));
+	//this function will initialise cheetahTile and rabbitTile member objects of type tile, this way the class will always have
+	//access to the tile the rabbit or cheetah is on.
+	public void getAnimalLocation(Cheetah _che, Rabbit _rab){
 
 			//loops through tile array and returns tile that is colliding with cheetah
 			//loops for each tile calling drawn name function
@@ -78,47 +73,184 @@ class Grid extends Sprite{
 
 					if( _che.checkCollision(grid[x][y])){
 
-						temp = grid[x][y];				
+						cheetahTile = grid[x][y];				
 					}
 
-					//taking advantage of this loop to clear the cheetahMD value to clear old
-					//data
-					grid[x][y].cheetahMD = 0;
+					if( _rab.checkCollision(grid[x][y])){
+
+						rabbitTile = grid[x][y];				
+					}
 				}
 			}
+	}
 
-		//initialising temp Tile in order to get a lower MD value than surounding without
-		//it being initialised to ten
-		temp.cheetahMD = 1;  
+	//A tile in args is designated as the root node and using a breadth first search, this function uses a queue data structure to initialise parent
+	//tiles in the grid along a frontier expanding out 
+	public void BFS(Tile _tile){
 
-		//A depth first search from the tile colliding with cheetah will
-		//increase the value of cheetah MD by ten each time, queue object
-		//is initialised and a root tile is enqueued
+		//creating queue structure
 		Queue q = new Queue();
-		q.enqueue(temp);
 
-		int tempInt = 0;
+		//enqueueing the first tile passed in
+		q.enqueue(_tile);
 
 		while(!q.queueEmpty()){
 
-			temp = (Tile) q.dequeue();
+			_tile = (Tile) q.dequeue();
 
-			tempInt += 10;
-			for(int t = 0; t < temp.neighbours.size(); t++){
+			for(int t = 0; t < _tile.neighbours.size(); t++){
 
-				if(temp.neighbours.get(t).cheetahMD == 0){
-
-					temp.neighbours.get(t).cheetahMD = tempInt;
-					q.enqueue(temp.neighbours.get(t));
+				if(_tile.neighbours.get(t).parent == null){
+				
+					_tile.neighbours.get(t).parent = _tile;
+					q.enqueue(_tile.neighbours.get(t));
 				}
 			}
 		}
+	}
+
+	//uses the above Breadth First search function to return a linked list node
+	//to the cheetah
+	public Tile BFStoRabbit(boolean _t, Cheetah _che, Rabbit _rab){
+
+		if( _t){
+
+			//updates rabbitTile and cheetahTile to get newest tiles colliding with rabbit and cheetah
+			getAnimalLocation( _che, _rab);
+
+			//connects all nodes to the tile the cheetah is colliding with
+			BFS(cheetahTile);
+
+			System.out.println("returning rabbit tile");
+
+			//returns the rabbit tile
+			return rabbitTile;
+		}
+
+		System.out.println("returning temp tile");
+		//returns location of a temp tile set to null
+
+		Tile t = cheetahTile;
+		t.parent = null;
+		return t;
+	}
+
+	//this function simply loops through all nodes resetting the parents to null, this is so
+	//fresh searches are not interfered with, this only goes ahead if true is passed into args
+	public void resetParents(boolean _t){
+
+		if(_t){
+
+			//resets last initialisation ready for new values
+			for(int x = 0; x < grid.length; x++){
+				for(int y = 0; y < grid[x].length; y++){
+
+					grid[x][y].parent = null;
+				}
+			}
+		}
+	}
+
+	//resets MD values for rabbit abd cheetah
+	public void resetMD(){
+
+		//resets last initialisation ready for new values
+		for(int x = 0; x < grid.length; x++){
+			for(int y = 0; y < grid[x].length; y++){
+
+				grid[x][y].cheetahMD = 0;
+				grid[x][y].rabbitMD = 0;
+			}
+		}
+	}
+
+	//set cheetah manhattan distance value, when this is called the tiles nearest to the cheetah have a lower value
+	//and the tiles further away have a higher value, this is done using a breadth first algorithm to create a frontier of nodes
+	//each layer of the new frontier is initialised with an incrementing value, the effect is lower values in the center of a grid
+	public void setCheetahMD(){
+
+		try{
+
+			//initialising Tile in order to get a lower MD value than surounding without
+			//it being initialised to ten as well as surrounding tiles
+			cheetahTile.cheetahMD = 1;  
+
+			//A depth first search from the tile colliding with cheetah will
+			//increase the value of cheetah MD by ten each time, queue object
+			//is initialised and a root tile is enqueued
+			Queue q = new Queue();
+
+			//enqueueing the tile that colliedes with cheetah as the root of a breadth first search
+			q.enqueue(cheetahTile);
+
+			int tempInt = 0;
+
+			while(!q.queueEmpty()){
+
+				cheetahTile = (Tile) q.dequeue();
+
+				tempInt += 10;
+				for(int t = 0; t < cheetahTile.neighbours.size(); t++){
+
+					if(cheetahTile.neighbours.get(t).cheetahMD == 0){
+
+						cheetahTile.neighbours.get(t).cheetahMD = tempInt;
+						q.enqueue(cheetahTile.neighbours.get(t));
+					}
+				}
+			}
 
 		}catch(Exception e){
 
-			System.out.println("Could not create cheetah distance heurestic algorithm");
+			System.out.println("Problem setting cheetahs MD values");
+		}
+
+	}
+
+	//  - rabbit version of the above code, not yet refactored to operate on both rabbit and cheetah, this will be-
+	//set Rabbit manhattan distance value, when this is called the tiles nearest to the cheetah have a lower value
+	//and the tiles further away have a higher value, this is done using a breadth first algorithm to create a frontier of nodes
+	//each layer of the new frontier is initialised with an incrementing value, the effect is lower values in the center of a grid
+	public void setRabbitMD(){
+
+		try{
+
+			//initialising Tile in order to get a lower MD value than surounding without
+			//it being initialised to ten as well as surrounding tiles
+			rabbitTile.rabbitMD = 1;  
+
+			//A depth first search from the tile colliding with rabbit will
+			//increase the value of rabbit MD by ten each time, queue object
+			//is initialised and a root tile is enqueued
+			Queue q = new Queue();
+
+			//enqueueing the tile that collides with rabbit as the root
+			q.enqueue(rabbitTile);
+
+			int tempInt = 0;
+
+			while(!q.queueEmpty()){
+
+				rabbitTile = (Tile) q.dequeue();
+
+				tempInt += 10;
+				for(int t = 0; t < rabbitTile.neighbours.size(); t++){
+
+					if(rabbitTile.neighbours.get(t).rabbitMD == 0){
+
+						rabbitTile.neighbours.get(t).rabbitMD = tempInt;
+						q.enqueue(rabbitTile.neighbours.get(t));
+					}
+				}
+			}
+
+		}catch(Exception e){
+
+			System.out.println("Problem setting rabbit MD value");
 		}
 	}
+
+
 
 	//uses the kernel to initialise each tiles array of surrounding tiles, this way each tile will know who his neighbourse are !
 	//this is meant to only be used internaly however it is not private as it may be used when reseting the program
@@ -178,8 +310,21 @@ class Grid extends Sprite{
 		
 	}
 
+	//shows all connected tiles with arrows
+	public void pointToParents( Graphics gr2){
+
+		//loops for each tile calling drawn name function
+		for(int x = 0; x < grid.length; x++){
+			for(int y = 0; y < grid[x].length; y++){
+
+				grid[x][y].setArrow();
+				grid[x][y].drawArrow(gr2);
+			}
+		}
+	}
+
 	//shows all tiles grid numbers 
-	public void drawNumbers(Graphics gr2){
+	public void drawNumbers( Graphics gr2){
 
 		//loops for each tile calling drawn name function
 		for(int x = 0; x < grid.length; x++){
@@ -226,17 +371,21 @@ class Grid extends Sprite{
 		}
 	}
 
-	//shows cheetahs manhattan distance
-	public void drawCheetahMD(Graphics gr2){
+	//shows rabbit and cheetahs cheetahs manhattan distances
+	public void drawMD(Graphics gr2){
 
 		//loops for each tile calling drawn name function
 		for(int x = 0; x < grid.length; x++){
 			for(int y = 0; y < grid[x].length; y++){
 
-				grid[x][y].drawString( gr2, "ch-dist:\n" + String.valueOf(grid[x][y].cheetahMD),  2, 40);
+				grid[x][y].drawString( gr2, "cheetah:",  2, 14);
+				grid[x][y].drawString( gr2, "rabbit:" ,  2, 34);
+				grid[x][y].drawString( gr2, String.valueOf(grid[x][y].cheetahMD),  2, 24);
+				grid[x][y].drawString( gr2, String.valueOf(grid[x][y].rabbitMD),  2, 44);
 			}
 		}
 	}
 }
 
 //array list of arraylist help from this stack overflow url: http://stackoverflow.com/questions/25147799/java-arraylist-of-arraylist
+//this was useful for calculating the A* algorithm http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html

@@ -67,6 +67,8 @@ public class Game extends Canvas implements Runnable{
 			rabbit = new Rabbit();
 			cheetah = new Cheetah();
 
+			cheetah.setXY( 400, 200);
+
 			//adding a little patch of sand to the grad array that contains the background
 			grid.addSandPatch( 4, 4);
 
@@ -114,16 +116,28 @@ public class Game extends Canvas implements Runnable{
         	grid.drawGrid( graphics);
         	//grid.drawNames( graphics);
         	//grid.drawTorp( graphics);
-        	//grid.drawNumbers( graphics);
-        	grid.drawCheetahMD( graphics);
-        	//grid.drawConnections( graphics);
-        	grid.setCheetahMD( cheetah);
+        	grid.drawNumbers( graphics);
+        	grid.getAnimalLocation( cheetah, rabbit);
 
+        	grid.resetMD();
+        	
+        	//grid.drawConnections( graphics);
+        	grid.setCheetahMD();
+        	grid.setRabbitMD();
+
+        	//grid.drawMD( graphics);
+      	
         	graphics.drawImage( rabbit.nextFrame(), rabbit.getPosX(), rabbit.getPosY(), rabbit.getWidth(), rabbit.getHeight(),  null);
         	graphics.drawImage( cheetah.nextFrame(), cheetah.getPosX(), cheetah.getPosY(), cheetah.getWidth(), cheetah.getHeight(), null);
       	 		
         	cheetah.moveSprite();
         	rabbit.moveSprite();
+
+        	//the grid resets the parent pointers to null if cheetah is still going to the rabbit, each iteration
+        	//a fresh linked list is passed to cheetah if cheetah is not chasing the rabbit
+        	grid.resetParents(cheetah.chasingRabbit(grid.BFStoRabbit(cheetah.searching, cheetah, rabbit)));
+
+        	grid.pointToParents( graphics);
 
 	 		////////////////---------------------> end of drawring and updates <-----------------------------\\\\\\\\\\\\\\\\\
 

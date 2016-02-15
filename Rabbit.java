@@ -30,7 +30,5 @@ class Rabbit extends Sprite{
 		//set the default state to start
 		activateState("START");
 
-
-
 	}
 }

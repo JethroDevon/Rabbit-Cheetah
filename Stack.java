@@ -65,7 +65,7 @@ public class Stack{
 			return 0;
 		}else{
 
-				return 1 + recursiveCount(n.getNext());		
+			return 1 + recursiveCount(n.getNext());		
 		}
 	}
 
