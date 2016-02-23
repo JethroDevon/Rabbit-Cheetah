@@ -28,6 +28,8 @@ public class Game extends Canvas implements Runnable{
 	//screen size variables initialised in constructor
 	private int WIDTH, HEIGHT;
 
+	double tangletemp;
+
 	//thses two objects are the key lelements of the clipping blitting method
 	private BufferStrategy bs;
 	private Graphics graphics;
@@ -104,40 +106,61 @@ public class Game extends Canvas implements Runnable{
 
         	//////////////////////////////////////////////////////////////////////////
         	//																		//
-        	//		GAME FUNCTIONS AND UPDATES HERE									//
+        	//			 		GAME FUNCTIONS AND UPDATES HERE						//
         	//																		//
         	//////////////////////////////////////////////////////////////////////////
 
+	 		cheetah.pollConditions();
+	 		cheetah.setAngle(tangletemp);
+
+	 	
+
+	 			tangletemp += 1;
+	 			System.out.println("-"+Math.toDegrees(cheetah.getAngle()));
+	 			if (tangletemp > 360){
+	 				tangletemp = 0;
+	 			}
+	 		
 
         	//temp background
 	 		graphics.setColor(Color.white);
         	graphics.fillRect( 0, 0, WIDTH, HEIGHT);
 
         	grid.drawGrid( graphics);
-        	//grid.drawNames( graphics);
-        	//grid.drawTorp( graphics);
+        	grid.drawNames( graphics);
+        	grid.drawTorp( graphics);
+
         	grid.drawNumbers( graphics);
         	grid.getAnimalLocation( cheetah, rabbit);
 
+        	grid.showParent( graphics);
         	grid.resetMD();
         	
         	//grid.drawConnections( graphics);
         	grid.setCheetahMD();
         	grid.setRabbitMD();
 
+        	grid.BFStoRabbit( cheetah, rabbit);
+
+        	//grid.showPath( graphics);
+        
         	//grid.drawMD( graphics);
       	
         	graphics.drawImage( rabbit.nextFrame(), rabbit.getPosX(), rabbit.getPosY(), rabbit.getWidth(), rabbit.getHeight(),  null);
         	graphics.drawImage( cheetah.nextFrame(), cheetah.getPosX(), cheetah.getPosY(), cheetah.getWidth(), cheetah.getHeight(), null);
       	 		
+        	rabbit.nextMove(grid.rabbitTile, grid.cheetahTile);
+        
+        	//cheetah.nextMove( grid.rabbitTile, grid.cheetahTile);
+
         	cheetah.moveSprite();
-        	rabbit.moveSprite();
+        	grid.getAnimalLocation( cheetah, rabbit);
 
         	//the grid resets the parent pointers to null if cheetah is still going to the rabbit, each iteration
         	//a fresh linked list is passed to cheetah if cheetah is not chasing the rabbit
-        	grid.resetParents(cheetah.chasingRabbit(grid.BFStoRabbit(cheetah.searching, cheetah, rabbit)));
+        	
 
-        	grid.pointToParents( graphics);
+        
 
 	 		////////////////---------------------> end of drawring and updates <-----------------------------\\\\\\\\\\\\\\\\\
 

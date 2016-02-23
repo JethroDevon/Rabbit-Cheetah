@@ -1,17 +1,11 @@
+import java.awt.Graphics;
+
 class Cheetah extends Sprite{
 
-	//this tile contains a linked list of nodes that own 'Tile' data, this will
-	//be the node by node path to the rabbit for the function chaseRabbit()
-	//to move cheetah to
-	Tile rabbitList;
 
-	//this stack structure will be initialised with each item in the rabbitList linked list
-	//as a linked list will reverse the order of the linked list it is perfect to initialise
-	//a list of nodes to visit in order, on visit, the node is popped.
-	Stack path;
+	private Tile targetNode, originNode, nextNode;
 
-	//true if the cheetah is searching for the rabbit false if it is not
-	boolean searching = false;
+	private Stack path;
 
 	public Cheetah() throws Exception{
 
@@ -26,55 +20,153 @@ class Cheetah extends Sprite{
 		//overides default state to not include blank sprite frames
 		addState("default", 0, 63, getHeight(), getWidth(), 0, 0, 0, 0);
 
-		//states for running in each of eight directions
+
+		/*	IGNORING STATE STRATEGY IN ORDER TO TEST CONDITION STRATEGY
+
+		states for running in each of eight directions
 		addState("RIGHT", 0, 7, getHeight(), getWidth(), 10, 0, 2, 0);
 		addState("UP", 8, 15, getHeight(), getWidth(), 10, 0, 2, 270);
 		addState("UP-RIGHT", 16, 23, getHeight(), getWidth(), 10, 0, 2, 315);
 		addState("UP-LEFT", 24, 31, getHeight(), getWidth(), 10, 0, 2, 225);
 		addState("LEFT", 56, 63, getHeight(), getWidth(), 10, 0, 2, 180);
 		addState("DOWN", 32, 39, getHeight(), getWidth(), 10, 0, 2, 90);
-		addState("DOWN-RIGHT", 40, 47, getHeight(), getWidth(), 2, 0, 2, 45);
+		addState("DOWN-RIGHT", 40, 47, getHeight(), getWidth(), 10, 0, 2, 45);
 		addState("DOWN-LEFT", 48, 55, getHeight(), getWidth(), 10, 0, 2, 135);
 
 		//set the default state to start
-		activateState("DOWN-RIGHT");
+		activateState("LEFT");
 
-		rabbitList = null;
+		*/
+
+		addAngleCondition( 0, 45, 0, 7);
+		addAngleCondition( 45, 90, 40, 47);
+		addAngleCondition( 90, 135, 32, 39);
+		addAngleCondition( 135, 180, 48, 55);
+		addAngleCondition( 180, 225, 56, 63);
+		addAngleCondition( 225, 270, 24, 31);
+		addAngleCondition( 270, 315, 8, 15);
+		addAngleCondition( 315, 360, 16, 23);
 
 		path = new Stack();
 	}
 
-	//initialises path stack with rabbitList linked list
-	public void initialisePath(){
 
-		while( rabbitList != null){
+	public void initPath(){
 
-			path.push(rabbitList);
-			rabbitList = rabbitList.parent;
+		if(targetNode != null && originNode != null){
+
+			while(targetNode.number != originNode.number){
+
+				path.push(targetNode);
+				targetNode = targetNode.parent;	
+			}
 		}
 	}
 
-	//moves cheetah to each node on stack
-	public void nextMove(){
+	//draws all tiles connected to each neighbour, this is soley to check if all is working accordingly
+	public void drawPath(Graphics gr2){
 
+		Tile _temp = (Tile) path.pop();
+		Tile present = _temp;
 
+		while(!path.stackEmpty()){
+
+			_temp = (Tile) path.pop();
+
+			gr2.drawLine( present.getPosX() +30, present.getPosY() +30, _temp.getPosX() +30, _temp.getPosY()+30);
+
+			present = _temp;
+		}
 	}
 
-	//if rabbitList is set to null then this function will allow an update through args
-	//and rabbitList and return true to say that it is still traveling to the rabbit to the 
-	//grid function that will clear the locations between the cheetah and the rabbit on the condition
-	//it wants to search again
-	public boolean chasingRabbit(Tile _t){
+	//tells the sprite to go in any of the eight directions that its surrounding nodes are in
+	public boolean visitNeighbour(Tile _neighbour, Tile _present){
 
-		if(rabbitList == null){
+		if(checkCollision(_neighbour)){
 
-			rabbitList = _t;		
-			searching = true;
-			//initialisePath();
+			switch(_present.number - _neighbour.number){
+
+			case 11 :
+
+				activateState("UP-LEFT");
+				break;
+
+			case 10:
+
+				activateState("UP");
+				break;
+
+			case 9:
+
+				activateState("UP-RIGHT");
+				break;
+
+			case 1:
+
+				activateState("LEFT");
+				break;
+
+			case -1:
+
+				activateState("RIGHT");
+				break;
+
+			case -9:
+
+				activateState("DOWN-LEFT");
+				break;
+
+			case -10:
+
+				activateState("DOWN");
+				break;
+
+			case -11:
+
+				activateState("DOWN-RIGHT");
+				break;
+
+			default:
+
+				break;
+		}
 			return true;
-		}
+		}else{
 
-		searching = false;
-		return false;
+
+			return false;
+		}
 	}
+
+	public void nextMove(Tile _rabbitTile, Tile _cheetahTile){
+
+		//while there is still a stack with different nodes on it to visit
+		if(!path.stackEmpty()){
+
+			if( !visitNeighbour( nextNode, _cheetahTile)){
+
+				nextNode = (Tile) path.pop();
+				//System.out.println(nextNode.number);
+			}else{
+
+				moveSprite();
+			}
+		
+		}else{
+
+			//initialise args for initPath
+			targetNode = _rabbitTile;
+			originNode = _cheetahTile;
+
+			//loads adt stack with linked list passed over frem getting the cheetah tile
+			initPath();		
+
+			//sets the first target node for hte cheetah to travel to
+			nextNode = (Tile) path.pop();
+			nextNode = (Tile) path.pop();
+			//System.out.println("start node number is " + nextNode.number);
+		}
+	}
+
+	
 }

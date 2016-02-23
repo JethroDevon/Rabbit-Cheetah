@@ -2,12 +2,18 @@ import java.awt.Graphics;
 
 class Grid extends Sprite{
 
+	//stack structure containing path to rabbit
+	Stack path;
+
 	//this nested array list will store a grid of nodes, this class will perform algorithmic operations
 	//such as returning shortest path walks between two points 
 	Tile[][] grid;
 
 	//cheetah and rabbit tile are the tiles that are presently colliding with either the cheetah or rabbit, they are initialised with
 	//getAnimalLocation() function
+	//these tiles will also contain a linked list of nodes from cheetah to rabbit, it will be initialised with various
+	//different search methods, each link will be loaded onto a stack called path, this will reverse the list and 
+	//allow acces to each node for operations controling cheetah object
 	Tile cheetahTile, rabbitTile;
 
 	//kernel allows me to ckeck surrounding elements in a two dimensional array by adding plus or minus values
@@ -64,6 +70,8 @@ class Grid extends Sprite{
 
 	//this function will initialise cheetahTile and rabbitTile member objects of type tile, this way the class will always have
 	//access to the tile the rabbit or cheetah is on.
+	//if parents of either tile have been initialised to either rabbit or cheetah collision tile then the tile will also contain 
+	//a link to any other  node on the grid
 	public void getAnimalLocation(Cheetah _che, Rabbit _rab){
 
 			//loops through tile array and returns tile that is colliding with cheetah
@@ -100,8 +108,9 @@ class Grid extends Sprite{
 
 			for(int t = 0; t < _tile.neighbours.size(); t++){
 
-				if(_tile.neighbours.get(t).parent == null){
+				if(!_tile.neighbours.get(t).visited){
 				
+					_tile.neighbours.get(t).visited = true;
 					_tile.neighbours.get(t).parent = _tile;
 					q.enqueue(_tile.neighbours.get(t));
 				}
@@ -109,37 +118,46 @@ class Grid extends Sprite{
 		}
 	}
 
+	//A tile in args is designated as the root node and using a Depthfirst search, this function uses a queue data structure to initialise parent
+	//tiles in the grid 
+	public void DFS(Tile _tile){
+
+		//creating stack structure
+		Stack s = new Stack();
+
+		//pushing the first tile to stack
+		s.push(_tile);
+
+		while(s.recursiveCount(s.head) != 0){
+
+			_tile = (Tile) s.pop();
+
+			for(int t = 0; t < _tile.neighbours.size(); t++){
+
+				if(!_tile.neighbours.get(t).visited){
+				
+					_tile.neighbours.get(t).visited = true;
+					_tile.neighbours.get(t).parent = _tile;
+					s.push(_tile.neighbours.get(t));
+				}
+			}
+		}
+	}
+
 	//uses the above Breadth First search function to return a linked list node
 	//to the cheetah
-	public Tile BFStoRabbit(boolean _t, Cheetah _che, Rabbit _rab){
-
-		if( _t){
+	public void BFStoRabbit(Cheetah _che, Rabbit _rab){
 
 			//updates rabbitTile and cheetahTile to get newest tiles colliding with rabbit and cheetah
 			getAnimalLocation( _che, _rab);
 
 			//connects all nodes to the tile the cheetah is colliding with
-			BFS(cheetahTile);
-
-			System.out.println("returning rabbit tile");
-
-			//returns the rabbit tile
-			return rabbitTile;
-		}
-
-		System.out.println("returning temp tile");
-		//returns location of a temp tile set to null
-
-		Tile t = cheetahTile;
-		t.parent = null;
-		return t;
+			BFS(cheetahTile);	
 	}
 
 	//this function simply loops through all nodes resetting the parents to null, this is so
 	//fresh searches are not interfered with, this only goes ahead if true is passed into args
-	public void resetParents(boolean _t){
-
-		if(_t){
+	public void resetParents(){
 
 			//resets last initialisation ready for new values
 			for(int x = 0; x < grid.length; x++){
@@ -147,8 +165,7 @@ class Grid extends Sprite{
 
 					grid[x][y].parent = null;
 				}
-			}
-		}
+			}	
 	}
 
 	//resets MD values for rabbit abd cheetah
@@ -207,7 +224,9 @@ class Grid extends Sprite{
 
 	}
 
-	//  - rabbit version of the above code, not yet refactored to operate on both rabbit and cheetah, this will be-
+
+
+	// - rabbit version of the above code, not yet refactored to operate on both rabbit and cheetah, this will be-
 	//set Rabbit manhattan distance value, when this is called the tiles nearest to the cheetah have a lower value
 	//and the tiles further away have a higher value, this is done using a breadth first algorithm to create a frontier of nodes
 	//each layer of the new frontier is initialised with an incrementing value, the effect is lower values in the center of a grid
@@ -310,17 +329,30 @@ class Grid extends Sprite{
 		
 	}
 
-	//shows all connected tiles with arrows
-	public void pointToParents( Graphics gr2){
+	//shows parents of each tile with a line to display connections
+	public void showParent(Graphics gr2){
 
 		//loops for each tile calling drawn name function
 		for(int x = 0; x < grid.length; x++){
 			for(int y = 0; y < grid[x].length; y++){
 
-				grid[x][y].setArrow();
-				grid[x][y].drawArrow(gr2);
+				if(grid[x][y].parent != null){
+
+					//long line of code simply draws a line between the tile and its parent
+					gr2.drawLine(grid[x][y].getPosX() + grid[x][y].getWidth()/2, grid[x][y].getPosY() + grid[x][y].getHeight()/2, grid[x][y].parent.getPosX() + grid[x][y].parent.getWidth()/2, grid[x][y].parent.getPosY() + grid[x][y].parent.getHeight()/2);
+				}
 			}
 		}
+	}
+
+	//shows path cheetah would take to rabbit
+	public void showPath(Graphics gr2){
+
+		//while(!path.stackEmpty()){
+
+			//gr2.drawLine();
+			
+		//}
 	}
 
 	//shows all tiles grid numbers 

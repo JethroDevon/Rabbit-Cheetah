@@ -6,16 +6,19 @@
 	The purpose of this class is to draw animated sprites that are easy to use in a game type environment, these sprites should be able to function as projectiles, pickups
 	animated caracters that are controled by the player with keys or mouse, animations in the background or effects such as explosions, buttons, scrollable text boxes or even as a splash screen.
 
-	This class will contain functions that allow detection of collisions with other objects of Sprite, detection of keypresses and mouse actions.
+	This class will contain functions that allow detection of collisions with other objects of Sprite, returns the angle between this Sprite and other objects of type sprite
 
 	Objects of this class will contain an array of images, these will be frames for animation, integers to store height width and positions.
 
 	Each object will be initialised with a name, this is so the object can be assigned a unique ID for various reasons, it will also help identify this object in debug messages.
 
-	Comments will reference changes of state, a state is the frames for an animation to loop between, the position to draw the next iteration, the width and height dimensions if they need to change,
-	in this case a state will be an enumaration that will store these details and newState() will contain arguments that will add a new state to sprite where as changeState() will contain the argument in the form
-	of a string to change that state too, this is so the class can be simple to use and understand by everyone, if no states are added, then only the default state will be used, the width and height of the object will
-	be that of each buffered image in the frames array and the posX and posY will be 0 , 0.
+	Comments will reference changes of state or conditions, a sub class called stateData manages these,
+	a state is the frames for an animation to loop between, the position to draw the next iteration, the width and height dimensions if they need to change,
+
+	in this case a state will these details and addState() will contain arguments that will add a new state to sprite 
+	if no states are added, then only the default state will be used, the width and height of the object will be default and based on the size of the frames.
+	A condition is an angle speed or velocity with data on which frames to loop through in case the sprites condition matches one saved in the array list 'conditions',
+	'addAngle/speed/velocityCondition()' are three seperate functions that will add conditions, pollConditions() will do the checking to see if a condition has changed 
 
 	it is recomended that objects of this class will be stored in array lists or singularly in a wrapper class that is likley to be used in the main application loop using an MVC style functionality, however a lone
 	object right at the start of a program can be used as a splash screen, a timer class and a start stop boolean will be included to aid extra functionality.
@@ -30,17 +33,13 @@
 
 
 
-																							TO-DO:        
-
-	convert velocity and max velocity to integers.
+																							TO-DO:       
 
 	add display size of sprite, create seperate display size from collision size and functions to support changes, possibly even allow easing to show gradual change in size! maybe.
 
 	add a perpixel collision function
 
 	add list of sprite names to ignore collisions with or to simply repel away from
-
-	add a function to automatically call another state once a set state is finished, have a switch to have this sprite react to end of a state after a function is called or every time
 
 	consider converting images with a set colour to be converted to alpha
 
@@ -82,6 +81,7 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.RGBImageFilter;
 
 
+
 public class Sprite{
 
 	//this stores a contact sheet image, this will contain all frames of animation in one image
@@ -92,6 +92,11 @@ public class Sprite{
 
 	//stores various states for the sprite
 	private ArrayList<stateData> states = new ArrayList<stateData>();
+
+	//stores conditions of the sprite, calling 'pollState()' on each object in this array list
+	//and inputing angle, speed or velocity of in args will return true or false if that condition has been stored, 
+	//and this sprites angle, speed or velocity matches
+	public ArrayList<stateData> conditions = new ArrayList<stateData>();
 
 	//these store dimensions of the sprite, frame stores the present frameNum the sprite will draw, frameStart and frameEnd are the start and end loops the
 	//animation will cycle through, default state has start at 0 and end at the number of frames
@@ -118,15 +123,15 @@ public class Sprite{
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS; Several different types of constructor for several different types of sprite, the first is a standard animated sprite, the second takes an argument that determines  //
-	//	what kind of sprite to produce, if the argument for '_functionality'is:																											  //
+	//	what kind of sprite to produce based on the argument containting 'functionality'																								  //
 	//																																													  //
-	//																																													  //
+	//	The second two are for plain images one takes a path to an image the other an image passed into it, this is for dynamic initialisation											  //
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//This constructor is for a standard animated sprite,
 	//constructor requires the image name in the form of a string, a path to load the image from, and the rows and columns the contact sheet is split up into.
 	//this constructor can throw an exception if it is not initialised properly.
-	public Sprite(String _name, String _path, int _rows, int _cols) throws Exception{
+	public Sprite( String _name, String _path, int _rows, int _cols) throws Exception{
 
 		try{
 
@@ -323,14 +328,15 @@ public class Sprite{
 	//as above function however if the state is allready active then the function is not called at all
 	public void continue_activateState(String _setStateTo){
 
-		if(getState() != _setStateTo){
+		if(!(getState().equals(_setStateTo))){
 
 			activateState(_setStateTo);
 		}
 	}
 
 	//this function also activates state almost the same as above however it does not change
-	//velocity, maxVelocity, angle or speed, this is to keep fluid movements
+	//velocity, maxVelocity, angle or speed, this is to allow for just changing the frames
+	//if the conditions change, ideal for moving sprites with keys as keys are held down
 	public void semi_activateState(String _setStateTo){
 
 		//if found is never set to true, state was never found and default state is used
@@ -350,6 +356,42 @@ public class Sprite{
 		setVelocity(_velocity);
 		setAcceleration(_acceleration);
 		setAngle(_angle);
+	}
+
+	//adds angle condition to conditions array 
+	public void addAngleCondition(double _startAngle, double _endAngle, int _frameStart, int _frameEnd){
+
+		conditions.add(new stateData(_startAngle, _endAngle, _frameStart, _frameEnd));
+	}
+
+	//adds speed condition to the conditions array
+	public void addSpeedCondition(int _speedStart, int _speedEnd, int _frameStart, int _frameEnd){
+
+		conditions.add(new stateData(_speedStart, _speedEnd, _frameStart, _frameEnd));
+	}
+
+	//adds velocity conditions to the conditions array
+	public void addVelocityCondition(boolean isIncreasing, int _velocity, int _frameStart, int _frameEnd){
+
+		conditions.add(new stateData( isIncreasing, _velocity, _frameStart, _frameEnd));
+	}
+
+	//loops the conditions array to check if sprite matches any one of the saved conditions, if it does frame start and
+	//frame end are updated
+	public void pollConditions(){
+
+		//for each connection
+		for(int x = 0; x < conditions.size(); x++){
+
+			//if any conditions are true
+			if(conditions.get(x).checkCondition("ANGLE", getAngle()) || conditions.get(x).checkCondition("SPEED", getVelocity()) ||
+			 conditions.get(x).checkCondition("INCREASING", getAcceleration()) || conditions.get(x).checkCondition("DECREASING", getAcceleration())){
+
+				//assign frame start and end with associated frame start and end data stored in stateData
+				frameStart = conditions.get(x).dStart;
+				frameEnd = conditions.get(x).dEnd;
+			}
+		}
 	}
 
 	//this function returns the next frame in the animation loop
@@ -419,7 +461,7 @@ public class Sprite{
     	}
 	}
 
-	//adds a new frame
+	//adds a new frame to frame array
 	public void addFrame(BufferedImage _img){
 
 		frames.add(_img);
@@ -619,21 +661,41 @@ public class Sprite{
 		posY = _y;
 	}
 
-	//////////////////////////////////////////////////////////////////////////////
-	//	Extra classes and auto functions; stateData structure,paint     		//
-	//////////////////////////////////////////////////////////////////////////////
+	/**********************************************************************************************************************\\
+						stateSata makes two sprite managment strategies possible, States and Conditions.
+
+		CONDITIONS: if a sprite has reached a specific speed, angle or an increasing or decreasing velocity, the sprites
+		animation states are made to change to ones that fit, this is done by adding a condition to the conditions array
+		and having pollCOnditions in sprite check to see if the conditions of the sprite match any of the data, if they do the starting 
+		and ending frames in frame loop are changed, ie;
+
+		function in sprite class is called on sprite object like this: my_sprite.addCondition( 0.0, 180.0, 10, 15),
+		this function  adds a 'stateData' object to the 'conditions' array list, 'pollConditions()' will poll this array if it is not empty
+		to check if condition of the sprite would return true, if true is returned from the object then the object also owns the
+		correct frames to loop between
+
+		STATES: If a state is added with add state, then when 'activateState()' is called, the name of the state is found and the
+		conditions of the state are updated from the same object, ie;
+
+		 'goLeft' state is added to the state array with 'addState()', its arguments in constructor were to animate between frames 10 and 15
+		 ( a sequence of images creating a leftwards walking stickman) and the angle was 180 degrees with a speed of 2 a total speed of ten and
+		a velocity of 2, when my_sprite.activate('goLEFT') is called 'moveSprite()' will move the sprite in units of vector passed in args
+		with increasing velocity till max velocity is reached and 'nextFrame()' will return the next frame in a loop between 10 and 15
+
+	\*************************************************************************************************************************/
 
 	//this class manages the data for each state, objects of this class are to be saved in the stateArray
-	public class stateData{
+	protected class stateData{
 
 		//variables to store state data 
 		String dName;
-		int dStart, dEnd, dHeight, dWidth;
+		int dStart, dEnd, dHeight, dWidth, speedStart, speedEnd;
 		float dmaxVelocity, dvelocity, dacceleration;
-		double dangle;
+		double dangle, angleStart, angleEnd;
 
-		//initialise variables in constructor
-		public stateData(String _dname, int _dstart, int _dend, int _dheight, int _dwidth, float _dmvel, float _dvel, float _dacc, double _dangle){
+		//initialise variables in constructor for automatic states, first arg is state name, second and third are animation frames to loop between, next is the height,
+		//width, max velocity, velocity, acceleration speed and angle
+		protected stateData(String _dname, int _dstart, int _dend, int _dheight, int _dwidth, float _dmvel, float _dvel, float _dacc, double _dangle){
 
 			dName = _dname;
 			dStart = _dstart;
@@ -645,5 +707,78 @@ public class Sprite{
 			dacceleration = _dacc;
 			dangle = _dangle;
 		}
-	}
-}
+
+		//initialise variables in constructor for initialising an animation state based on the angle:
+		//if the angle is between _angleStart and _angleEnd then loop the animation between _dstart and _dend
+		protected stateData(double _aStart, double _aEnd, int _dstart, int _dend){
+
+		
+
+			//assign data from constructor
+			dStart = _dstart;
+			dEnd = _dend;
+			angleStart = _aStart;
+			angleEnd = _aEnd;
+		}
+
+		//initialise variables in constructor for initialising an animation state based on the speed:
+		//if the speed is between _speedStart and _speedEnd then loop the animation between _dstart and _dend
+		public stateData(int _speedStart, int _speedEnd, int _dstart, int _dend){
+
+		
+			//assign data from constructor
+			dStart = _dstart;
+			dEnd = _dend;
+			speedStart = _speedStart;
+			speedEnd = _speedEnd;
+		}
+
+		//initialise variables in constructor for initialising an animation state based on the velocity:
+		//if first arg is true then the state will have changed if the sprites velocity is
+		//greater than that in the second argument, if it is false the change will occue when it is less than
+		//if more than one of these are set then there are conflicts, this can be resolved by calling pollState strategicaly
+		public stateData(boolean _ifIncreasing, int _dvelocity, int _dstart, int _dend){
+
+
+			//assign data from constructor
+			dStart = _dstart;
+			dEnd = _dend;
+			dvelocity = _dvelocity;
+		}
+
+
+		//if called on object returns true if the conditions are met to return variables associated with the state
+		//argument is for checking against saved conditions relating to which state condition is activated
+		//takes a double as args to satisfy angle, speed and velocity can convert into integer
+		public boolean checkCondition(String _name, double _condition){
+
+			switch(_name){
+
+				case "ANGLE":
+
+					if( _condition > angleStart && _condition < angleEnd)
+						return true;
+
+				case "SPEED":
+
+					if( _condition > speedStart && _condition < speedEnd)
+						return true;
+
+				case "INCREASING":
+
+					if( _condition > dvelocity)
+						return true;
+				case "DECREASING":
+
+					if( _condition < dvelocity)
+						return true;
+
+				default:
+
+					//no state conditions have been met
+					return false;
+			}
+		}
+
+	}//end of stateData class
+}//end of sprite class

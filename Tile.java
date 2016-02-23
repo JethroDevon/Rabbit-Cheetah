@@ -26,17 +26,14 @@ class Tile extends Sprite{
 	//location of each tile and thus a path to the other animal
 	public Tile parent = null;
 
-	public Sprite arrow;
+	//set to true if visited else false and not visited
+	public boolean visited = false; 
 
 	//constructor must throw exception as sprite does so error can be passed up to being handled
 	public Tile(String _name, BufferedImage _img) throws Exception{
 
 		//super takes the tile image as an argument
 		super(_name, _img);
-
-		//arrow sprite is added here
-		arrow = new Sprite( "arrow", ImageIO.read(new File("data/arrow.png")));
-		arrow.setXY( getPosX(), getPosY());
 	} 
 
 	//various search methods will be used to point tiles to other tiles, if a parent tile is returned
@@ -54,44 +51,6 @@ class Tile extends Sprite{
 		for(Tile n : neighbours){
 
 			g2.drawLine(getPosX() + getWidth()/2, getPosY() + getHeight()/2, n.getPosX() + n.getWidth()/2, n.getPosY() + n.getHeight()/2);
-		}
-	}
-
-	//draws rotated arrow
-	public void drawArrow( Graphics g2){
-
-		//only draw if tile has an initialisation
-		if(parent != null){
-
-			BufferedImage temp = arrow.getFrame();
-
-			// create the transform, note that the transformations happen
-            // in reversed order (so check them backwards)
-            AffineTransform at = new AffineTransform();
-
-            //translate it to the center of the component
-            at.translate(arrow.getWidth() / 2, arrow.getHeight() / 2);
-
-            //rotate
-            at.rotate(arrow.getAngle());
-
-            //ranslate the object so that you rotate it around the centre
-            at.translate(arrow.getPosX() -temp.getWidth()/2, arrow.getPosY() -temp.getHeight()/2);
-
-            Graphics2D g2d = (Graphics2D) g2;
-
-            g2d.setTransform(at);
-
-            g2d.drawImage( temp, getPosX(), getPosY(), arrow.getWidth(), arrow.getHeight(), null);
-		}
-	}
-
-	//points arrow to its parent
-	public void setArrow(){
-
-		if(parent != null){
-
-			arrow.setAngle(Math.atan2( parent.getPosX() - getPosX(), parent.getPosY() - getPosY()));
 		}
 	}
 
