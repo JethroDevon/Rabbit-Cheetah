@@ -78,4 +78,4 @@ The rabbit will suddenly change direction as the cheetah catches up to attempt t
 the rabbit will be slower but more agile and the cheeta is faster but less agile.
 
 
-Sprites were under free liscence from http://www.reinerstilesets.de, liscence is http://www.reinerstilesets.de/lizenz/
+Sprites were under free liscence from http://opengameart.org/
