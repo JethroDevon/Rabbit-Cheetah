@@ -378,18 +378,20 @@ public class Sprite{
 
 	//loops the conditions array to check if sprite matches any one of the saved conditions, if it does frame start and
 	//frame end are updated
-	public void pollConditions(){
+	public void pollConditions(String _condition){
 
 		//for each connection
 		for(int x = 0; x < conditions.size(); x++){
 
-			//if any conditions are true
-			if(conditions.get(x).checkCondition("ANGLE", getAngle()) || conditions.get(x).checkCondition("SPEED", getVelocity()) ||
-			 conditions.get(x).checkCondition("INCREASING", getAcceleration()) || conditions.get(x).checkCondition("DECREASING", getAcceleration())){
+			//if _condition is true true
+			if(conditions.get(x).checkCondition(_condition, getAngle()) ){
+			
 
 				//assign frame start and end with associated frame start and end data stored in stateData
 				frameStart = conditions.get(x).dStart;
 				frameEnd = conditions.get(x).dEnd;
+
+				System.out.println(frameStart + " " + frameEnd);
 			}
 		}
 	}
@@ -757,9 +759,13 @@ public class Sprite{
 				case "ANGLE":
 
 					if( _condition > angleStart && _condition < angleEnd)
+
+						System.out.print("angle condition is " + _condition + ", start: " + angleStart + ", end: " + angleEnd);
 						return true;
 
 				case "SPEED":
+
+				System.out.println("SPEED");
 
 					if( _condition > speedStart && _condition < speedEnd)
 						return true;

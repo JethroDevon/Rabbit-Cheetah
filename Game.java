@@ -110,16 +110,20 @@ public class Game extends Canvas implements Runnable{
         	//																		//
         	//////////////////////////////////////////////////////////////////////////
 
-	 		cheetah.pollConditions();
+	 		cheetah.pollConditions("ANGLE");
+	 
+
+	
+
+	 		tangletemp++;
+
 	 		cheetah.setAngle(tangletemp);
+	 			
+	 		if (tangletemp > 360){
 
-	 	
-
-	 			tangletemp += 1;
-	 			System.out.println("-"+Math.toDegrees(cheetah.getAngle()));
-	 			if (tangletemp > 360){
 	 				tangletemp = 0;
-	 			}
+	 		}
+	 			
 	 		
 
         	//temp background
