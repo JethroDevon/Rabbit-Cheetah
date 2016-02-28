@@ -99,15 +99,16 @@ public class Sprite{
 	public ArrayList<stateData> conditions = new ArrayList<stateData>();
 
 	//these store dimensions of the sprite, frame stores the present frameNum the sprite will draw, frameStart and frameEnd are the start and end loops the
-	//animation will cycle through, default state has start at 0 and end at the number of frames
-	private int posX, posY, width, height, frameNum, frameStart, frameEnd;
+	//animation will cycle through, default state has start at 0 and end at the number of frames, deltaX and Y are for 'deltaMove()' this function draws the sprite as normal but with added delta values
+	//this can be used for moving grids of sprites in relation to something 
+	private int posX, posY, width, height, frameNum, frameStart, frameEnd, deltaX, deltaY;
 
 	//maxVelocity, velocity, angle and acceleration are for smooth movement functions of the sprite, acceleration is to add a spot of easing to the movement functions
 	//to create a natural movement maxVelocity is the set speed velocity will build up or down to based on acceleration 
 	private float maxVelocity, velocity, acceleration;  
 
 	//angle variable, must be a double for easy conversion to degrees
-	private double angle;
+	private double angle, lastAngle;
 
 	//these are to check if the sprite is colliding with another sprite/colliding has been set to true, if the mouse is over the spite and if the sprite
 	//has been selected (mouse over sprite and a mouse click has been detected selected is toggled to true and false)
@@ -380,18 +381,15 @@ public class Sprite{
 	//frame end are updated
 	public void pollConditions(String _condition){
 
-		//for each connection
-		for(int x = 0; x < conditions.size(); x++){
+		if(lastAngle != getAngle()){
 
-			//if _condition is true true
-			if(conditions.get(x).checkCondition(_condition, getAngle()) ){
-			
+			lastAngle = getAngle();
 
-				//assign frame start and end with associated frame start and end data stored in stateData
-				frameStart = conditions.get(x).dStart;
-				frameEnd = conditions.get(x).dEnd;
+			//for each connection
+			for(int x = 0; x < conditions.size(); x++){
 
-				System.out.println(frameStart + " " + frameEnd);
+				if(conditions.get(x).checkCondition(_condition))
+					break;
 			}
 		}
 	}
@@ -480,8 +478,8 @@ public class Sprite{
 	boolean checkCollision(Sprite _spr){
 
 		//this is a standard collision detetion algorithm using the sprites dimensions
-		if(getPosX() + getWidth() > _spr.getPosX() && getPosX() < _spr.getPosX() + _spr.getWidth() &&
-       getPosY() + getHeight() > _spr.getPosY() && getPosY() <  _spr.getPosY() + _spr.getHeight()){
+		if((getPosX() + deltaX) + getWidth() > _spr.getPosX() && (getPosX() + deltaX) < _spr.getPosX() + _spr.getWidth() &&
+       (getPosY() + deltaY) + getHeight() > _spr.getPosY() && (getPosY() + deltaY) <  _spr.getPosY() + _spr.getHeight()){
 
 			colliding = false;
 			return true;
@@ -490,6 +488,35 @@ public class Sprite{
 			colliding = true;
 			return false;
 		}
+	}
+
+	//this function detects a circular collision with the centre of the sprite that is passed in args, the second argument is the diameter of
+	//the circle to collid with
+	boolean circularCollision(Sprite _spr, int _radius){
+
+		int squarex = deltaX + getPosX() + (getWidth()/2) - _spr.getPosX() + (getWidth()/2);
+		int squarey = deltaY + getPosY() + (getHeight()/2) - _spr.getPosY() + (getHeight()/2);
+
+		//this is a standard circular collision detetion algorithm using the sprites dimensions, the circular collision will collid with the center of
+		//this sprite from a circle eminating from the center of the sprite to check
+		if(Math.sqrt( (squarex * squarex) + (squarey * squarey)) < _radius){
+
+			colliding = false;
+			return true;
+		}else{
+
+			colliding = true;
+			return false;
+		}
+	}
+
+	//this function will set the angle to be pointing towards the sprite in args
+	public void pointTo( Sprite _sprite){
+
+		double angleTo = Math.toDegrees(Math.abs( Math.atan2( getPosX() - _sprite.getPosX(), getPosY() - _sprite.getPosY())));
+
+		//inverse the angle as it is relative to
+		setAngle( angleTo);
 	}
 
 	//this function moves the sprite one unit towards its present vector each time it is called each time it is called
@@ -501,6 +528,13 @@ public class Sprite{
 		//increment positionX and Y using trig, I always found this link exceptionally usefull http://www.helixsoft.nl/articles/circle/sincos.htm
 		//when first learning to use this
 		setXY( posX += velocity * Math.cos(Math.toRadians(angle)), posY += velocity * Math.sin(Math.toRadians(angle)));
+	}
+
+	//moves the sprite with its presnt position plus a delta value
+	public void deltaMove(){
+
+		//adds delta value to existing value
+		setXY( posX + deltaX, posY + deltaY);
 	}
 
 	//manages acceleration easing if speed has not been set to constant
@@ -663,6 +697,12 @@ public class Sprite{
 		posY = _y;
 	}
 
+	public void setDelta( int _dx, int _dy){
+
+		deltaX = _dx;
+		deltaY = _dy;
+	}
+
 	/**********************************************************************************************************************\\
 						stateSata makes two sprite managment strategies possible, States and Conditions.
 
@@ -714,8 +754,6 @@ public class Sprite{
 		//if the angle is between _angleStart and _angleEnd then loop the animation between _dstart and _dend
 		protected stateData(double _aStart, double _aEnd, int _dstart, int _dend){
 
-		
-
 			//assign data from constructor
 			dStart = _dstart;
 			dEnd = _dend;
@@ -752,38 +790,22 @@ public class Sprite{
 		//if called on object returns true if the conditions are met to return variables associated with the state
 		//argument is for checking against saved conditions relating to which state condition is activated
 		//takes a double as args to satisfy angle, speed and velocity can convert into integer
-		public boolean checkCondition(String _name, double _condition){
+		public boolean checkCondition(String _name){
 
-			switch(_name){
+			if(_name == "ANGLE"){
+			
+				double _angle = getAngle();
 
-				case "ANGLE":
+				if(angle >= angleStart && angle >= angleEnd){
 
-					if( _condition > angleStart && _condition < angleEnd)
+					frameStart = dStart;
+					frameEnd = dEnd;
 
-						System.out.print("angle condition is " + _condition + ", start: " + angleStart + ", end: " + angleEnd);
-						return true;
-
-				case "SPEED":
-
-				System.out.println("SPEED");
-
-					if( _condition > speedStart && _condition < speedEnd)
-						return true;
-
-				case "INCREASING":
-
-					if( _condition > dvelocity)
-						return true;
-				case "DECREASING":
-
-					if( _condition < dvelocity)
-						return true;
-
-				default:
-
-					//no state conditions have been met
-					return false;
+					return true;
+				}
 			}
+
+			return false;
 		}
 
 	}//end of stateData class

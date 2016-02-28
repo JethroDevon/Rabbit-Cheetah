@@ -2,10 +2,7 @@ import java.awt.Graphics;
 
 class Rabbit extends Sprite{
 
-	//this is the tile the rabbit is presently on
-	Tile present;
-
-	boolean newTile = false;
+	Tile present, nextTile;
 
 	public Rabbit() throws Exception{
 
@@ -17,7 +14,7 @@ class Rabbit extends Sprite{
 		setWidth(getWidth()/2);
 		setHeight(getHeight()/2);
 
-		//overides default state to not include blank sprite frames
+		/*/overides default state to not include blank sprite frames
 		addState("default", 0, 152, getHeight(), getWidth(), 0, 0, 0, 0);
 
 		//the animation is of a stationary rabbit that is sitting down and rotating, will do for start
@@ -32,79 +29,61 @@ class Rabbit extends Sprite{
 		addState("DOWN", 119, 127, getHeight(), getWidth(), 8, 0, 0, 270);
 		addState("DOWN-RIGHT", 128, 136, getHeight(), getWidth(), 7, 0, 2, 45);
 		addState("DOWN-LEFT", 137, 145, getHeight(), getWidth(), 8, 0, 2, 135);
+		*/
 
-		//set the default state to start
-		activateState("DOWN-RIGHT");
 
+		addAngleCondition( 0, 45, 0, 7);
+		addAngleCondition( 45, 90, 40, 47);
+		addAngleCondition( 90, 135, 32, 39);
+		addAngleCondition( 135, 180, 48, 55);
+		addAngleCondition( 180, 225, 56, 63);
+		addAngleCondition( 225, 270, 24, 31);
+		addAngleCondition( 270, 315, 8, 15);
+		addAngleCondition( 315, 360, 16, 23);
 	}
 
-		//tells the sprite to go in any of the eight directions that its surrounding nodes are in
-	public boolean visitNeighbour(Tile _neighbour, Tile _present){
+	//rabbit needs present tile passed in on initialisation
+	public void initRabbit( Tile _present){
 
-		if(checkCollision(_neighbour)){
-
-			switch(_present.number - _neighbour.number){
-
-			case 11 :
-
-				activateState("UP-LEFT");
-				break;
-
-			case 10:
-
-				activateState("UP");
-				break;
-
-			case 9:
-
-				activateState("UP-RIGHT");
-				break;
-
-			case 1:
-
-				activateState("LEFT");
-				break;
-
-			case -1:
-
-				activateState("RIGHT");
-				break;
-
-			case -9:
-
-				activateState("DOWN-LEFT");
-				break;
-
-			case -10:
-
-				activateState("DOWN");
-				break;
-
-			case -11:
-
-				activateState("DOWN-RIGHT");
-				break;
-
-			default:
-
-				break;
-		}
-			return true;
-		}else{
-
-			return false;
-		}
+		present = _present;
+		visitNeighbour();
 	}
 
-	public void nextMove(Tile _rabbitTile, Tile _cheetahTile){
+	//tells the sprite to go in any of the eight directions that its surrounding nodes are in
+	public void visitNeighbour(){
 
-		if(visitNeighbour( present =_rabbitTile.neighbours.get((int)Math.random() * 9), _rabbitTile) && newTile == true){
+		int temp = (int) Math.random() * 9;
+		nextTile = present.neighbours.get(1);
+		System.out.println(temp + " " + nextTile.number);
+	}
 
-			newTile = false;
+	//this function takes a tile as an argument, the rabbit will move to
+	//its neighbour, the idea is to pass the presently colliding tile to 
+	//next move
+	public void nextMove(Tile _present){
+
+		present = _present;
+		visitNeighbour();
+
+		if( circularCollision( nextTile, 50)){
+
+			visitNeighbour();
+
+			//set angle to be adjacant to tile in arguments
+			pointTo(nextTile);
+
+			//set a starting angle
+			pollConditions("ANGLE");
 		}else{
+			
 
-			newTile = visitNeighbour( present, _rabbitTile);
+			setVelocity(1);//set angle to be adjacant to tile in arguments
+			pointTo(nextTile);
+			setmaxVelocity(6);
+			setAcceleration(2);
 		}
+
+
 
 		moveSprite();
 	}

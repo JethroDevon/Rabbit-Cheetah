@@ -145,7 +145,8 @@ class Grid extends Sprite{
 	}
 
 	//uses the above Breadth First search function to return a linked list node
-	//to the cheetah
+	//to the cheetah by connecting all nodes to the cheetah with a breadth first search and 
+	//returning the tile/ node thats colliding with the rabbit
 	public void BFStoRabbit(Cheetah _che, Rabbit _rab){
 
 			//updates rabbitTile and cheetahTile to get newest tiles colliding with rabbit and cheetah
@@ -345,15 +346,7 @@ class Grid extends Sprite{
 		}
 	}
 
-	//shows path cheetah would take to rabbit
-	public void showPath(Graphics gr2){
 
-		//while(!path.stackEmpty()){
-
-			//gr2.drawLine();
-			
-		//}
-	}
 
 	//shows all tiles grid numbers 
 	public void drawNumbers( Graphics gr2){
@@ -414,6 +407,18 @@ class Grid extends Sprite{
 				grid[x][y].drawString( gr2, "rabbit:" ,  2, 34);
 				grid[x][y].drawString( gr2, String.valueOf(grid[x][y].cheetahMD),  2, 24);
 				grid[x][y].drawString( gr2, String.valueOf(grid[x][y].rabbitMD),  2, 44);
+			}
+		}
+	}
+
+	//moves each and every tile on the grid so the cheetah can remain at the center of the screen and the world can move around it
+	public void moveGrid( int _dx, int _dy){
+
+		//loops for each tile calling drawn name function
+		for(int x = 0; x < grid.length; x++){
+			for(int y = 0; y < grid[x].length; y++){
+
+				grid[x][y].deltaMove( _dx , _dy);
 			}
 		}
 	}

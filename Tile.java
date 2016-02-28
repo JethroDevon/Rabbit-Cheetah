@@ -9,6 +9,8 @@ import java.awt.geom.AffineTransform;
 
 class Tile extends Sprite{
 
+	
+
 	//this value is for how much this tile would slow a cheetah or rabbit down, default is zero, number is the unique identity
 	//of each tile based on its position on the grid
 	public int tTorp = 0, number;
@@ -35,6 +37,12 @@ class Tile extends Sprite{
 		//super takes the tile image as an argument
 		super(_name, _img);
 	} 
+
+	//sets the deltaX and Y values for moving each tile, not real existing values, just in theory
+	public void deltaMove( int _dx, int _dy){
+
+		setXY( getPosX() - _dx, getPosY() - _dy);
+	}
 
 	//various search methods will be used to point tiles to other tiles, if a parent tile is returned
 	//then it will contain a pointer to another tile that contains another pointer and so on, this is 
