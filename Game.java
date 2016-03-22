@@ -120,18 +120,18 @@ public class Game extends Canvas implements Runnable{
         	graphics.fillRect( 0, 0, WIDTH, HEIGHT);
 
         	grid.drawGrid( graphics);
-        	//grid.drawNames( graphics);
+        	grid.drawNames( graphics);
         	//grid.drawTorp( graphics);
 
-        	//grid.drawNumbers( graphics);
+        	grid.drawNumbers( graphics);
         	grid.getAnimalLocation( cheetah, rabbit);
 
-        	//grid.showParent( graphics);
-        	//grid.resetMD();
+        	grid.showParent( graphics);
+        	grid.resetMD();
         	
         	//grid.drawConnections( graphics);
         	//grid.setCheetahMD();
-        	//grid.setRabbitMD();
+        	grid.setRabbitMD();
 
         	//performs a breadth first search
         	grid.BFStoRabbit( cheetah, rabbit);
@@ -139,7 +139,7 @@ public class Game extends Canvas implements Runnable{
 
         	grid.getAnimalLocation( cheetah, rabbit);
 
-        	//grid.drawMD( graphics);
+        	grid.drawMD( graphics);
       	
         	graphics.drawImage( rabbit.nextFrame(), rabbit.getPosX(), rabbit.getPosY(), rabbit.getWidth(), rabbit.getHeight(),  null);
         	graphics.drawImage( cheetah.nextFrame(), cheetah.getPosX(), cheetah.getPosY(), cheetah.getWidth(), cheetah.getHeight(), null);
@@ -150,7 +150,7 @@ public class Game extends Canvas implements Runnable{
         	
 
 
-        	cheetah.drawPath( graphics);
+        	//cheetah.drawPath( graphics);
   
 
 	 		////////////////---------------------> end of drawring and updates <-----------------------------\\\\\\\\\\\\\\\\\
